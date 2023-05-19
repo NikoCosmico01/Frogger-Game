@@ -159,7 +159,7 @@ impl Frog {
 impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         self.step = pt(0, 0);
-
+        let mut collide_with_trunk = false;
         if self.blinking == 0 {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
@@ -168,9 +168,15 @@ impl Actor for Frog {
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
                     self.step.x = trunk.step.x;
+                    collide_with_trunk = true;
                 }
             }
         }
+        if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 15 * 32 + 13{
+            self.blinking = 60;
+            self.lives -= 1;
+        }
+
         let keys = arena.current_keys();
         if keys.contains(&"ArrowUp") {
             self.step.y = -self.speed;
@@ -226,7 +232,9 @@ impl BounceGame {
         let mut arena = Arena::new(size);
 
         let sizeFrog = pt(size.x / 2 - 16, size.y - 3 * 32);
-        arena.spawn(Box::new(Trunk::new(pt(size.x - 61, size.y - 10 * 32 + 13),true)));
+        for i in 0..5{
+            arena.spawn(Box::new(Trunk::new(pt(size.x - 61, size.y - (10+i) * 32 + 13),true)));
+        }
 
         arena.spawn(Box::new(Frog::new(sizeFrog)));
         arena.spawn(Box::new(Vehicle::new(
