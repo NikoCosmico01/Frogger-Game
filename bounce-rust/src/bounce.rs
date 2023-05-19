@@ -40,7 +40,40 @@ impl Actor for Ball {
     fn alive(&self) -> bool { true }
     fn as_any(&self) -> &dyn Any { self }
 }
-
+pub struct Truck {
+    pos: Pt,
+    step: Pt,
+    size: Pt,
+    speed: i32,
+    left: bool
+}
+impl Truck{
+    pub fn new(pos: Pt, is_left: bool) -> Truck {
+        Truck{pos: pos, step: pt(0, 0), size: pt(61,23), speed: 4, left: is_left}
+    }
+}
+impl Actor for Truck {
+    fn act(&mut self, arena: &mut ArenaStatus) {
+        for other in arena.collisions() {
+            if let Some(_) = other.as_any().downcast_ref::<Ghost>() {
+            } else {
+                let diff = self.pos - other.pos();
+                self.step.x = self.speed * if diff.x > 0 { 1 } else { -1 };
+            }
+        }
+       
+        if self.left == true { self.step.x = -self.speed; }
+        else{
+            self.step.x = self.speed;
+        }
+        self.pos = self.pos + self.step;
+    }
+    fn pos(&self) -> Pt { self.pos }
+    fn size(&self) -> Pt { self.size }
+    fn sprite(&self) -> Option<Pt> { Some(pt(if self.left {192} else { 253 }, 68)) }
+    fn alive(&self) -> bool { true }
+    fn as_any(&self) -> &dyn Any { self }
+}
 
 pub struct Ghost {
     pos: Pt,
@@ -70,7 +103,7 @@ impl Actor for Ghost {
 }
 
 
-pub struct Turtle {
+pub struct Frog {
     pos: Pt,
     step: Pt,
     size: Pt,
@@ -78,18 +111,18 @@ pub struct Turtle {
     lives: i32,
     blinking: i32
 }
-impl Turtle {
-    pub fn new(pos: Pt) -> Turtle {
-        Turtle{pos: pos, step: pt(0, 0), size: pt(32, 32),
+impl Frog {
+    pub fn new(pos: Pt) -> Frog {
+        Frog{pos: pos, step: pt(0, 0), size: pt(32, 32),
             speed: 32, lives: 3, blinking: 0}
     }
     fn lives(&self) -> i32 { self.lives }
 }
-impl Actor for Turtle {
+impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         if self.blinking == 0 {
             for other in arena.collisions() {
-                if let Some(_) = other.as_any().downcast_ref::<Ball>() {
+                if let Some(_) = other.as_any().downcast_ref::<Truck>() {
                     self.blinking = 60;
                     self.lives -= 1;
                 }
@@ -139,8 +172,9 @@ impl BounceGame {
     }
     pub fn new(size: Pt, nballs: i32, nghosts: i32) -> BounceGame {
         let mut arena = Arena::new(size);
-        let size = pt(size.x/2-16,size.y-3*32);
-        arena.spawn(Box::new(Turtle::new(size)));
+        let sizeFrog = pt(size.x/2-16,size.y-3*32);
+        arena.spawn(Box::new(Frog::new(sizeFrog)));
+        arena.spawn(Box::new(Truck::new(pt(size.x-61,size.y-4*32),true)));
         for _ in 0..nballs {
             arena.spawn(Box::new(Ball::new(BounceGame::randpt(size))));
         }
@@ -149,7 +183,7 @@ impl BounceGame {
         }
         BounceGame{arena: arena, playtime: 120}
     }
-    pub fn game_over(&self) -> bool { self.remaining_lives() <= 0 }
+    pub fn game_over(&self) -> bool { self.remaining_time() <= 0 || self.remaining_lives() <= 0}
     pub fn game_won(&self) -> bool { self.remaining_time() <= 0 }
     pub fn remaining_time(&self) -> i32 {
         self.playtime - self.arena.count() / 30
@@ -158,7 +192,7 @@ impl BounceGame {
         let mut lives = 0;
         let actors = self.actors();
         if let Some(b) = actors.first() {
-            if let Some(hero) = b.as_any().downcast_ref::<Turtle>() {
+            if let Some(hero) = b.as_any().downcast_ref::<Frog>() {
                 lives = hero.lives();
             }
         }
