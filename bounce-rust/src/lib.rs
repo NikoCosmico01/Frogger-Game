@@ -12,7 +12,7 @@ pub struct BounceGui {
 }
 impl BounceGui {
     pub fn new() -> BounceGui {
-        let game = bounce::BounceGame::new(pt2d::pt(448, 576), 0, 0);
+        let game = bounce::BounceGame::new(pt2d::pt(480, 576), 0, 0);
         BounceGui{game}
     }
     pub fn setup(&self) {
@@ -59,14 +59,13 @@ impl BounceGui {
 			g2d::draw_image_clip("background.png".to_string(), pt2d::pt(j*30, 64), pt2d::pt(0, 32), pt2d::pt(32, 32));
 		}
 		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(0, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(32, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
+		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(96, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
 		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(128, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(160, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(256, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(288, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(384, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(416, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
-		for i in 0..2{
+		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(224, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
+		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(320, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
+		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(352, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
+		g2d::draw_image_clip("background.png".to_string(), pt2d::pt(448, 92), pt2d::pt(0, 32), pt2d::pt(32, 32));
+        for i in 0..2{
 			for j in 0..self.game.size().x/32{
 				g2d::draw_image_clip("frogger.png".to_string(), pt2d::pt(j*32, 480+i*(-192)), pt2d::pt(64, 192), pt2d::pt(32, 32));
 			}

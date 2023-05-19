@@ -139,8 +139,8 @@ impl BounceGame {
     }
     pub fn new(size: Pt, nballs: i32, nghosts: i32) -> BounceGame {
         let mut arena = Arena::new(size);
-        let size = size - pt(20, 20);
-        arena.spawn(Box::new(Turtle::new(size / pt(2, 2))));
+        let size = pt(size.x/2-16,size.y-3*32);
+        arena.spawn(Box::new(Turtle::new(size)));
         for _ in 0..nballs {
             arena.spawn(Box::new(Ball::new(BounceGame::randpt(size))));
         }
