@@ -10,6 +10,7 @@ pub enum VehicleType {
     Car1,
     Car2,
 }
+
 pub struct Trunk {
     pos: Pt,
     speed: i32,
@@ -171,14 +172,15 @@ impl Actor for Frog {
                     collide_with_trunk = true;
                 }
             }
+            if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
+                self.blinking = 60;
+                self.lives -= 1;
+            }
         }
-        if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 && self.pos.y > arena.size().y - 15 * 32{
-            self.blinking = 60;
-            self.lives -= 1;
-        }
+        
 
         let keys = arena.current_keys();
-        if keys.contains(&"ArrowUp") {
+        if keys.contains(&"ArrowUp") && self.blinking == 0 {
             self.step.y = -self.speed;
         } else if keys.contains(&"ArrowDown") {
             self.step.y = self.speed;
@@ -205,7 +207,9 @@ impl Actor for Frog {
         if self.blinking > 0 && (self.blinking / 2) % 2 == 0 {
             None
         } else {
-            Some(pt(256, 256))
+            if self.lives > 0{Some(pt(256, 256))}
+            else {Some(pt(2, 192))}
+            
         }
     }
     fn alive(&self) -> bool {

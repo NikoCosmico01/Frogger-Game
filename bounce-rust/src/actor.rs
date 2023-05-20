@@ -115,7 +115,7 @@ impl Arena {
 
         self.count += 1;
         self.actors.append(&mut spawned);
-        self.actors.retain(|b| b.alive());
+        //self.actors.retain(|b| b.alive());
         self.prev_keys = keys.to_string();
     }
     pub fn spawn(&mut self, b: Box<dyn Actor>) { self.actors.push(b); }
