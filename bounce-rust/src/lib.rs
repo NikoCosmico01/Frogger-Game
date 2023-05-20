@@ -32,7 +32,6 @@ impl BounceGui {
 
         if self.game.game_over() {
             g2d::alert("Game over".to_string());
-
             g2d::close_canvas();
         } else if self.game.game_won() {
             g2d::alert("Game won".to_string());
@@ -76,29 +75,29 @@ impl BounceGui {
                 );
             }
         }
-        for j in 0..self.game.size().x / 32 + 1 {
+        for j in 0..self.game.size().x / 32 + 2 {
             g2d::draw_image_clip(
                 "background.png".to_string(),
-                pt2d::pt(j * 30, 64),
+                pt2d::pt(j * 29-4, 64),
                 pt2d::pt(0, 32),
                 pt2d::pt(32, 32),
             );
         }
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(0, 92),
+            pt2d::pt(-4, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(96, 92),
+            pt2d::pt(98, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(128, 92),
+            pt2d::pt(126, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );
@@ -110,19 +109,19 @@ impl BounceGui {
         );
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(320, 92),
+            pt2d::pt(322, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(352, 92),
+            pt2d::pt(350, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );
         g2d::draw_image_clip(
             "background.png".to_string(),
-            pt2d::pt(448, 92),
+            pt2d::pt(452, 92),
             pt2d::pt(0, 32),
             pt2d::pt(32, 32),
         );

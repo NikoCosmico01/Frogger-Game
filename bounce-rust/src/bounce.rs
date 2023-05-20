@@ -140,6 +140,7 @@ pub struct Frog {
     size: Pt,
     speed: i32,
     lives: i32,
+	isGameWon: bool,
     blinking: i32,
 }
 impl Frog {
@@ -150,17 +151,29 @@ impl Frog {
             size: pt(32, 32),
             speed: 32,
             lives: 3,
+			isGameWon: false,
             blinking: 0,
         }
     }
     fn lives(&self) -> i32 {
         self.lives
     }
+	fn gameWon(&self) -> bool {
+		self.isGameWon
+	}
 }
 impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         self.step = pt(0, 0);
-        let mut collide_with_trunk = false;
+        let mut collide_with_trunk = false;	
+		if (self.pos.x >= 0 && self.pos.x <=32 ||
+				self.pos.x >= 96 && self.pos.x <= 160 ||
+				self.pos.x >= 224 && self.pos.x <= 256 ||
+				self.pos.x >= 320 && self.pos.x <= 384 ||
+				self.pos.x >= 448 && self.pos.x <= 480) &&
+				self.pos.y >= 96 && self.pos.y < 128 {
+				self.isGameWon = true;
+			}
         if self.blinking == 0 {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
@@ -197,6 +210,14 @@ impl Actor for Frog {
         self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
         self.blinking = max(self.blinking - 1, 0);
     }
+	/* onGrass(&self) -> bool {
+		(self.pos.x >= 0 && self.pos.x <=32 ||
+		self.pos.x >= 96 && self.pos.x <= 160 ||
+		self.pos.x >= 224 && self.pos.x <= 256 ||
+		self.pos.x >= 320 && self.pos.x <= 384 ||
+		self.pos.x >= 448 && self.pos.x <= 480) &&
+		self.pos.y >= 128 && self.pos.y <= 160	
+	}*/
     fn pos(&self) -> Pt {
         self.pos
     }
@@ -265,9 +286,9 @@ impl BounceGame {
     }
     pub fn game_over(&self) -> bool {
         self.remaining_time() <= 0 || self.remaining_lives() <= 0
-    }
+    }	
     pub fn game_won(&self) -> bool {
-        self.remaining_time() <= 0
+		self.winningGame()
     }
     pub fn remaining_time(&self) -> i32 {
         self.playtime - self.arena.count() / 30
@@ -281,6 +302,16 @@ impl BounceGame {
             }
         }
         lives
+    }
+	pub fn winningGame(&self) -> bool {
+        let mut winGame = false;
+        let actors = self.actors();
+        for actor in actors {
+            if let Some(hero) = actor.as_any().downcast_ref::<Frog>() {
+                winGame = hero.gameWon();
+            }
+        }
+        winGame
     }
     pub fn tick(&mut self, keys: String) {
         self.arena.tick(keys);
