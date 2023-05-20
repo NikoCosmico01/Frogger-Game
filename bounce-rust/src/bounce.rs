@@ -172,7 +172,7 @@ impl Actor for Frog {
                 }
             }
         }
-        if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 15 * 32 + 13{
+        if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 && self.pos.y > arena.size().y - 15 * 32{
             self.blinking = 60;
             self.lives -= 1;
         }
@@ -233,7 +233,13 @@ impl BounceGame {
 
         let sizeFrog = pt(size.x / 2 - 16, size.y - 3 * 32);
         for i in 0..5{
-            arena.spawn(Box::new(Trunk::new(pt(size.x - 61, size.y - (10+i) * 32 + 13),true)));
+            let random_number = randint(20,1000);
+            if i % 2 == 0 {
+                arena.spawn(Box::new(Trunk::new(pt(size.x - 61-(i*random_number), size.y - (10+i) * 32 + 13),true)));
+            }else{
+                arena.spawn(Box::new(Trunk::new(pt(size.x - 61-(i*random_number), size.y - (10+i) * 32 + 13),false)));
+            }
+            println!("{}",random_number);
         }
 
         arena.spawn(Box::new(Frog::new(sizeFrog)));
