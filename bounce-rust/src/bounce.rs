@@ -55,7 +55,7 @@ pub struct Vehicle {
     type_veichle: VehicleType,
 }
 impl Vehicle {
-    pub fn new(pos: Pt, is_left: bool, type_v: VehicleType) -> Vehicle {
+    pub fn new(pos: Pt, is_left: bool, type_v: VehicleType, set_speed: i32) -> Vehicle {
         let size_v;
         if type_v == VehicleType::Truck {
             size_v = pt(61, 23);
@@ -68,7 +68,7 @@ impl Vehicle {
             pos: pos,
             step: pt(0, 0),
             size: size_v,
-            speed: 4,
+            speed: set_speed,
             left: is_left,
             type_veichle: type_v,
         }
@@ -140,7 +140,7 @@ pub struct Frog {
     size: Pt,
     speed: i32,
     lives: i32,
-	isGameWon: bool,
+	is_game_won: bool,
     blinking: i32,
 }
 impl Frog {
@@ -151,15 +151,15 @@ impl Frog {
             size: pt(32, 32),
             speed: 32,
             lives: 3,
-			isGameWon: false,
+			is_game_won: false,
             blinking: 0,
         }
     }
     fn lives(&self) -> i32 {
         self.lives
     }
-	fn gameWon(&self) -> bool {
-		self.isGameWon
+	fn game_won(&self) -> bool {
+		self.is_game_won
 	}
 }
 impl Actor for Frog {
@@ -172,12 +172,14 @@ impl Actor for Frog {
 				self.pos.x >= 320 && self.pos.x <= 384 ||
 				self.pos.x >= 448 && self.pos.x <= 480) &&
 				self.pos.y >= 96 && self.pos.y < 128 {
-				self.isGameWon = true;
+				self.is_game_won = true;
 			}
         if self.blinking == 0 {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
-                    self.blinking = 60;
+					self.pos.x = 223;
+					self.pos.y = 480;
+                    self.blinking = 20;
                     self.lives -= 1;
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
@@ -186,7 +188,9 @@ impl Actor for Frog {
                 }
             }
             if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
-                self.blinking = 60;
+				self.pos.x = 223;
+				self.pos.y = 288;
+                self.blinking = 20;
                 self.lives -= 1;
             }
         }
@@ -210,14 +214,6 @@ impl Actor for Frog {
         self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
         self.blinking = max(self.blinking - 1, 0);
     }
-	/* onGrass(&self) -> bool {
-		(self.pos.x >= 0 && self.pos.x <=32 ||
-		self.pos.x >= 96 && self.pos.x <= 160 ||
-		self.pos.x >= 224 && self.pos.x <= 256 ||
-		self.pos.x >= 320 && self.pos.x <= 384 ||
-		self.pos.x >= 448 && self.pos.x <= 480) &&
-		self.pos.y >= 128 && self.pos.y <= 160	
-	}*/
     fn pos(&self) -> Pt {
         self.pos
     }
@@ -246,17 +242,10 @@ pub struct BounceGame {
     playtime: i32,
 }
 impl BounceGame {
-    fn randpt(size: Pt) -> Pt {
-        let mut p = pt(randint(0, size.x), randint(0, size.y));
-        while (p.x - size.x / 2).pow(2) + (p.y - size.y / 2).pow(2) < 10000 {
-            p = pt(randint(0, size.x), randint(0, size.y));
-        }
-        return p;
-    }
-    pub fn new(size: Pt, nballs: i32, nghosts: i32) -> BounceGame {
+    pub fn new(size: Pt) -> BounceGame {
         let mut arena = Arena::new(size);
 
-        let sizeFrog = pt(size.x / 2 - 16, size.y - 3 * 32);
+        let size_frog = pt(size.x / 2 - 16, size.y - 3 * 32);
         for i in 0..5{
             let random_number = randint(20,1000);
             if i % 2 == 0 {
@@ -266,17 +255,36 @@ impl BounceGame {
             }
             println!("{}",random_number);
         }
-
-        arena.spawn(Box::new(Frog::new(sizeFrog)));
+        arena.spawn(Box::new(Frog::new(size_frog)));
         arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 61, size.y - 4 * 32),
             false,
             VehicleType::Car1,
+			4,
         )));
         arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 61, size.y - 6 * 32),
             true,
             VehicleType::Car2,
+			5,
+        )));
+		arena.spawn(Box::new(Vehicle::new(
+            pt(size.x - 30, size.y - 5 * 32),
+            true,
+            VehicleType::Truck,
+			6,
+        )));
+		arena.spawn(Box::new(Vehicle::new(
+            pt(size.x - 30, size.y - 7 * 32),
+            true,
+            VehicleType::Car1,
+			4,
+        )));
+		arena.spawn(Box::new(Vehicle::new(
+            pt(size.x - 30, size.y - 8 * 32),
+            false,
+            VehicleType::Truck,
+			6,
         )));
       
         BounceGame {
@@ -288,7 +296,7 @@ impl BounceGame {
         self.remaining_time() <= 0 || self.remaining_lives() <= 0
     }	
     pub fn game_won(&self) -> bool {
-		self.winningGame()
+		self.winning_game()
     }
     pub fn remaining_time(&self) -> i32 {
         self.playtime - self.arena.count() / 30
@@ -303,15 +311,15 @@ impl BounceGame {
         }
         lives
     }
-	pub fn winningGame(&self) -> bool {
-        let mut winGame = false;
+	pub fn winning_game(&self) -> bool {
+        let mut win_game = false;
         let actors = self.actors();
         for actor in actors {
             if let Some(hero) = actor.as_any().downcast_ref::<Frog>() {
-                winGame = hero.gameWon();
+                win_game = hero.game_won();
             }
         }
-        winGame
+        win_game
     }
     pub fn tick(&mut self, keys: String) {
         self.arena.tick(keys);

@@ -1,5 +1,3 @@
-use crate::actor::Actor;
-use crate::bounce::Frog;
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
@@ -14,7 +12,7 @@ pub struct BounceGui {
 }
 impl BounceGui {
     pub fn new() -> BounceGui {
-        let game = bounce::BounceGame::new(pt2d::pt(480, 576), 0, 0);
+        let game = bounce::BounceGame::new(pt2d::pt(480, 576));
         BounceGui { game }
     }
     pub fn setup(&self) {
@@ -28,7 +26,7 @@ impl BounceGui {
             self.game.remaining_lives(),
             self.game.remaining_time()
         );
-        g2d::draw_text(txt, pt2d::pt(0, 0), 24);
+        
 
         if self.game.game_over() {
             g2d::alert("Game over".to_string());
@@ -38,13 +36,9 @@ impl BounceGui {
             g2d::close_canvas();
         } else {
             self.game.tick(g2d::current_keys()); // Game logic
-            let mut frog_pos = pt2d::pt(0, 0);
-            self.createBackground();
+            self.create_background();
+			g2d::draw_text(txt, pt2d::pt(0, 0), 24);
             for b in self.game.actors() {
-                if b.as_any().downcast_ref::<Frog>().is_some() {
-                    frog_pos = b.pos();
-                }
-
                 if let Some(img) = b.sprite() {
                     g2d::draw_image_clip("frogger.png".to_string(), b.pos(), img, b.size());
                 } else {
@@ -54,7 +48,7 @@ impl BounceGui {
 
         }
     }
-    pub fn createBackground(&mut self) {
+    pub fn create_background(&mut self) {
         for i in 0..9 {
             for j in 0..self.game.size().x / 32 {
                 g2d::draw_image_clip(

@@ -123,8 +123,3 @@ impl Arena {
     pub fn size(&self) -> Pt { self.size }
     pub fn count(&self) -> i32 { self.count }
 }
-
-//pub trait Actor { fn clone_dyn(&self) -> Box<dyn Actor>; }
-//impl Actor for Ball { fn clone_dyn... { Box::new(self.clone()) } }
-//impl Clone for Box<dyn Actor> { fn clone(&self) -> Self { self.clone_dyn() } }
-
