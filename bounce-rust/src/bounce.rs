@@ -177,10 +177,13 @@ impl Actor for Frog {
         if self.blinking == 0 {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
-					self.pos.x = 223;
-					self.pos.y = 480;
-                    self.blinking = 20;
                     self.lives -= 1;
+                    if self.lives > 0{
+                        self.pos.x = 223;
+                        self.pos.y = 480;
+                        self.blinking = 20;
+                    }
+                   
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
                     self.step.x = trunk.step.x;
@@ -188,10 +191,12 @@ impl Actor for Frog {
                 }
             }
             if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
-				self.pos.x = 223;
-				self.pos.y = 288;
-                self.blinking = 20;
                 self.lives -= 1;
+                    if self.lives > 0{
+                        self.pos.x = 223;
+                        self.pos.y = 288;
+                        self.blinking = 20;
+                    }
             }
         }
         
