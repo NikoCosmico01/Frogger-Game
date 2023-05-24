@@ -29,11 +29,21 @@ impl BounceGui {
         
 
         if self.game.game_over() {
-            g2d::alert("Game over".to_string());
-            g2d::close_canvas();
+            self.create_background();
+            g2d::draw_image_clip(
+                "gameOver.png".to_string(),
+                pt2d::pt(60,200),
+                pt2d::pt(0, 0),
+                pt2d::pt(370, 280),
+            );
         } else if self.game.game_won() {
-            g2d::alert("Game won".to_string());
-            g2d::close_canvas();
+            self.create_background();
+            g2d::draw_image_clip(
+                "won.png".to_string(),
+                pt2d::pt(20,140),
+                pt2d::pt(0, 0),
+                pt2d::pt(440, 330),
+            );
         } else {
             self.game.tick(g2d::current_keys()); // Game logic
             self.create_background();
@@ -50,7 +60,7 @@ impl BounceGui {
     }
     pub fn create_background(&mut self) {
         for i in 0..9 {
-            for j in 0..self.game.size().x / 32 {
+            for j in 0..self.game.size().x / 32 + 1 {
                 g2d::draw_image_clip(
                     "background.png".to_string(),
                     pt2d::pt(j * 32, 290 + i * (32)),
@@ -60,7 +70,7 @@ impl BounceGui {
             }
         }
         for i in 0..10 {
-            for j in 0..self.game.size().x / 32 {
+            for j in 0..self.game.size().x / 32 + 1 {
                 g2d::draw_image_clip(
                     "background.png".to_string(),
                     pt2d::pt(j * 32, 0 + i * (32)),
@@ -69,7 +79,7 @@ impl BounceGui {
                 );
             }
         }
-        for j in 0..self.game.size().x / 32 + 2 {
+        for j in 0..self.game.size().x / 32 + 4 {
             g2d::draw_image_clip(
                 "background.png".to_string(),
                 pt2d::pt(j * 29-4, 64),
@@ -120,7 +130,7 @@ impl BounceGui {
             pt2d::pt(32, 32),
         );
         for i in 0..2 {
-            for j in 0..self.game.size().x / 32 {
+            for j in 0..self.game.size().x / 32 + 1 {
                 g2d::draw_image_clip(
                     "frogger.png".to_string(),
                     pt2d::pt(j * 32, 480 + i * (-192)),
@@ -129,6 +139,12 @@ impl BounceGui {
                 );
             }
         }
+        g2d::draw_image_clip(
+            "frogger.png".to_string(),
+            pt2d::pt(128, 544),
+            pt2d::pt(0, 255),
+            pt2d::pt(224, 32),
+        );
     }
 }
 

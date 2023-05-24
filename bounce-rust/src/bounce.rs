@@ -205,29 +205,22 @@ impl Actor for Frog {
         if keys.contains(&"ArrowUp") == true && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
             self.step.y = -self.speed;
             move_frog = true;
-        } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown"){
+        } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown") && self.pos.y < 500{
             self.step.y = self.speed;
             move_frog = true;
-
-        }
+        } 
         if keys.contains(&"ArrowLeft") == true && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.step.x = -self.speed;
             move_frog = true;
-
         } else if keys.contains(&"ArrowRight") == true && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
             self.step.x = self.speed;
             move_frog = true;
-
-        }
-        
-       
-        if move_frog == true{
-            self.pos = self.pos + self.step;
-            let scr = arena.size() - self.size;
-            self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
-            self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
         }
        
+        self.pos = self.pos + self.step;
+        let scr = arena.size() - self.size;
+        self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
+        self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
         
         self.blinking = max(self.blinking - 1, 0);
     }
