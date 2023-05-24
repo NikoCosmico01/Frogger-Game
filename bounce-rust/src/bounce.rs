@@ -199,31 +199,36 @@ impl Actor for Frog {
                     }
             }
         }
-        
 
+        let mut move_frog = false;
         let keys = arena.current_keys();
-        if keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
+        if keys.contains(&"ArrowUp") == true && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
             self.step.y = -self.speed;
-            self.pos = self.pos + self.step;
-        } else if keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown"){
+            move_frog = true;
+        } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown"){
             self.step.y = self.speed;
-            self.pos = self.pos + self.step;
-        
+            move_frog = true;
+
         }
-        if keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
+        if keys.contains(&"ArrowLeft") == true && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.step.x = -self.speed;
-            self.pos = self.pos + self.step;
-        
-        } else if keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
+            move_frog = true;
+
+        } else if keys.contains(&"ArrowRight") == true && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
             self.step.x = self.speed;
-            self.pos = self.pos + self.step;
-        
+            move_frog = true;
+
         }
         
+       
+        if move_frog == true{
+            self.pos = self.pos + self.step;
+            let scr = arena.size() - self.size;
+            self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
+            self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
+        }
+       
         
-        let scr = arena.size() - self.size;
-        self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
-        self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
         self.blinking = max(self.blinking - 1, 0);
     }
     fn pos(&self) -> Pt {
