@@ -202,18 +202,25 @@ impl Actor for Frog {
         
 
         let keys = arena.current_keys();
-        if keys.contains(&"ArrowUp") && self.blinking == 0 {
+        if keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
             self.step.y = -self.speed;
-        } else if keys.contains(&"ArrowDown") {
+            self.pos = self.pos + self.step;
+        } else if keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown"){
             self.step.y = self.speed;
+            self.pos = self.pos + self.step;
+        
         }
-        if keys.contains(&"ArrowLeft") {
+        if keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.step.x = -self.speed;
-        } else if keys.contains(&"ArrowRight") {
+            self.pos = self.pos + self.step;
+        
+        } else if keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
             self.step.x = self.speed;
+            self.pos = self.pos + self.step;
+        
         }
-        self.pos = self.pos + self.step;
-
+        
+        
         let scr = arena.size() - self.size;
         self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
         self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
