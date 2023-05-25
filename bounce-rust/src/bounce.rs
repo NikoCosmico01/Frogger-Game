@@ -46,6 +46,43 @@ impl Actor for Trunk {
     }
     fn size(&self) -> Pt { pt(95, 19) }
 }
+
+pub struct Turtle {
+    pos: Pt,
+    speed: i32,
+    step: Pt,
+    left: bool
+}
+impl Turtle {
+    pub fn new(pos: Pt, is_left: bool) -> Turtle {
+        Turtle{pos: pos, speed: 2, step: pt(0,0), left: is_left}
+    }
+}
+impl Actor for Turtle {
+    fn act(&mut self, arena: &mut ArenaStatus) {
+        if self.pos.x + self.size().x <= 0 && self.left == true {
+            self.pos.x = arena.size().x;
+        }
+        if self.pos.x - self.size().x >= arena.size().x && self.left == false {
+            self.pos.x = 0 - self.size().x;
+        }
+        if self.left == true {
+            self.step.x = -self.speed;
+        } else {
+            self.step.x = self.speed;
+        }
+        self.pos = self.pos + self.step;
+    }
+    fn sprite(&self) -> Option<Pt> { Some(pt(224, 132)) }
+    fn pos(&self) -> Pt { self.pos }
+    fn alive(&self) -> bool {
+        true
+    }fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn size(&self) -> Pt { pt(30, 22) }
+}
+
 pub struct Vehicle {
     pos: Pt,
     step: Pt,
@@ -165,7 +202,8 @@ impl Frog {
 impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         self.step = pt(0, 0);
-        let mut collide_with_trunk = false;	
+        let mut collide_with_trunk = false;
+        let mut collide_with_turtle = false;	
 		if (self.pos.x >= 0 && self.pos.x <=32 ||
 				self.pos.x >= 96 && self.pos.x <= 160 ||
 				self.pos.x >= 224 && self.pos.x <= 256 ||
@@ -189,32 +227,31 @@ impl Actor for Frog {
                     self.step.x = trunk.step.x;
                     collide_with_trunk = true;
                 }
+                if let Some(turtle) = other.as_any().downcast_ref::<Turtle>() {
+                    self.step.x = turtle.step.x;
+                    collide_with_turtle = true;
+                }
             }
-            if collide_with_trunk == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
+            if collide_with_trunk == false && collide_with_turtle == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
                 self.lives -= 1;
                     if self.lives > 0{
                         self.pos.x = 223;
                         self.pos.y = 288;
                         self.blinking = 20;
                     }
-            }
+            }            
         }
 
-        let mut move_frog = false;
         let keys = arena.current_keys();
         if keys.contains(&"ArrowUp") == true && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
             self.step.y = -self.speed;
-            move_frog = true;
         } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown") && self.pos.y < 500{
             self.step.y = self.speed;
-            move_frog = true;
         } 
         if keys.contains(&"ArrowLeft") == true && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.step.x = -self.speed;
-            move_frog = true;
         } else if keys.contains(&"ArrowRight") == true && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
             self.step.x = self.speed;
-            move_frog = true;
         }
        
         self.pos = self.pos + self.step;
@@ -254,9 +291,11 @@ pub struct BounceGame {
 impl BounceGame {
     pub fn new(size: Pt) -> BounceGame {
         let mut arena = Arena::new(size);
-
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 61, size.y - 320 + 6), true)));
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 87, size.y - 320 + 6), true)));
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 113, size.y - 320 + 6), true)));
         let size_frog = pt(size.x / 2 - 16, size.y - 3 * 32);
-        for i in 0..5{
+        for i in 1..5{
             let random_number = randint(20,1000);
             if i % 2 == 0 {
                 arena.spawn(Box::new(Trunk::new(pt(size.x - 61-(i*random_number), size.y - (10+i) * 32 + 13),true)));
