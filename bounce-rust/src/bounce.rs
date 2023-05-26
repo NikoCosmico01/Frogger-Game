@@ -413,7 +413,7 @@ impl BounceGame {
 
         BounceGame {
             arena: arena,
-            playtime: 120,
+            playtime: 60,
         }
     }
     pub fn game_over(&self) -> bool {
@@ -421,6 +421,10 @@ impl BounceGame {
     }
     pub fn game_won(&self) -> bool {
         self.winning_game()
+    }
+
+    pub fn playtime(&self) -> i32 {
+        self.playtime
     }
     pub fn remaining_time(&self) -> i32 {
         self.playtime - self.arena.count() / 30
