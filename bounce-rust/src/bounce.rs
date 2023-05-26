@@ -91,20 +91,9 @@ impl Actor for Turtle {
             self.step.x = self.speed;
         }
         self.pos = self.pos + self.step;
-
-        //Random blinking
-        if randint(0, 1000) == 5 && self.blinking == 0 {
-            self.blinking = 10;
-        }
-
-        self.blinking = max(self.blinking - 1, 0);
     }
     fn sprite(&self) -> Option<Pt> {
-        if self.blinking > 0 && (self.blinking / 2) % 2 == 0 {
-            None
-        } else {
-            Some(pt(224, 132))
-        }
+        Some(pt(224, 132))
     }
     fn pos(&self) -> Pt {
         self.pos
@@ -329,8 +318,6 @@ impl Actor for Frog {
                 }
         
         }
-    }
-
         let keys = arena.current_keys();
         if keys.contains(&"ArrowUp") == true
             && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
@@ -381,6 +368,9 @@ impl Actor for Frog {
             self.direction = 2;
             self.jump = false;
         }
+    }
+
+        
 
         self.pos = self.pos + self.step;
         let scr = arena.size() - self.size;
@@ -513,7 +503,7 @@ impl BounceGame {
 
         BounceGame {
             arena: arena,
-            playtime: 60,
+            playtime: 120,
         }
     }
     pub fn game_over(&self) -> bool {
