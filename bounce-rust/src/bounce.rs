@@ -216,17 +216,21 @@ pub struct Frog {
     lives: i32,
     is_game_won: bool,
     blinking: i32,
+    direction: i32 //0 w, 1 a, 2 d, 3s 
+
 }
 impl Frog {
     pub fn new(pos: Pt) -> Frog {
         Frog {
             pos: pos,
             step: pt(0, 0),
-            size: pt(32, 32),
+            size: pt(23, 25),
             speed: 32,
             lives: 3,
             is_game_won: false,
             blinking: 0,
+            direction : 0,
+
         }
     }
     fn lives(&self) -> i32 {
@@ -259,6 +263,7 @@ impl Actor for Frog {
                         self.pos.x = 223;
                         self.pos.y = 480;
                         self.blinking = 20;
+                    
                     }
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
@@ -289,20 +294,28 @@ impl Actor for Frog {
             && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
             && self.blinking == 0
         {
+            self.direction = 4;
             self.step.y = -self.speed;
-        } else if keys.contains(&"ArrowDown") == true
+        } else if keys.contains(&"ArrowUp") == false
+        && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp"){
+            self.direction = 0;
+        }
+         else if keys.contains(&"ArrowDown") == true
             && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
             && self.pos.y < 500
         {
+            self.direction = 3;
             self.step.y = self.speed;
         }
         if keys.contains(&"ArrowLeft") == true
             && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
         {
             self.step.x = -self.speed;
+            self.direction = 1;
         } else if keys.contains(&"ArrowRight") == true
             && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
         {
+            self.direction = 2;
             self.step.x = self.speed;
         }
 
@@ -324,7 +337,27 @@ impl Actor for Frog {
             None
         } else {
             if self.lives > 0 {
-                Some(pt(256, 256))
+                if self.direction == 0
+                {
+                    Some(pt(4, 4))
+                }else if self.direction == 1
+                {
+                    Some(pt(100, 4))
+
+                }
+                else if self.direction == 2
+                {
+                    Some(pt(64, 36))
+
+                } else if self.direction == 4
+                {
+                    Some(pt(38,4))
+
+                }
+                else {
+                    Some(pt(162, 34))
+
+                }
             } else {
                 Some(pt(2, 192))
             }
