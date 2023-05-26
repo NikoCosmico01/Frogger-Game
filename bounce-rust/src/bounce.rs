@@ -216,21 +216,21 @@ pub struct Frog {
     lives: i32,
     is_game_won: bool,
     blinking: i32,
-    direction: i32 //0 w, 1 a, 2 d, 3s 
-
+    direction: i32, //0 w, 1 a, 2 d, 3s
+    jump: bool,
 }
 impl Frog {
     pub fn new(pos: Pt) -> Frog {
         Frog {
             pos: pos,
             step: pt(0, 0),
-            size: pt(23, 25),
+            size: pt(25, 27),
             speed: 32,
             lives: 3,
             is_game_won: false,
             blinking: 0,
-            direction : 0,
-
+            direction: 0,
+            jump: false,
         }
     }
     fn lives(&self) -> i32 {
@@ -261,9 +261,10 @@ impl Actor for Frog {
                     self.lives -= 1;
                     if self.lives > 0 {
                         self.pos.x = 223;
-                        self.pos.y = 480;
+                        self.pos.y = 483;
                         self.blinking = 20;
-                    
+                        self.direction = 0;
+                        self.jump = false;
                     }
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
@@ -283,8 +284,10 @@ impl Actor for Frog {
                 self.lives -= 1;
                 if self.lives > 0 {
                     self.pos.x = 223;
-                    self.pos.y = 288;
+                    self.pos.y = 291;
                     self.blinking = 20;
+                    self.direction = 0;
+                    self.jump = false;
                 }
             }
         }
@@ -294,29 +297,50 @@ impl Actor for Frog {
             && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
             && self.blinking == 0
         {
-            self.direction = 4;
+            self.direction = 0;
+            self.jump = true;
             self.step.y = -self.speed;
         } else if keys.contains(&"ArrowUp") == false
-        && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp"){
+            && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
+        {
             self.direction = 0;
-        }
-         else if keys.contains(&"ArrowDown") == true
+            self.jump = false;
+        } else if keys.contains(&"ArrowDown") == true
             && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
             && self.pos.y < 500
         {
             self.direction = 3;
+            self.jump = true;
             self.step.y = self.speed;
+        } else if keys.contains(&"ArrowDown") == false
+            && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
+            && self.pos.y < 500
+        {
+            self.direction = 3;
+            self.jump = false;
         }
         if keys.contains(&"ArrowLeft") == true
             && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
         {
             self.step.x = -self.speed;
             self.direction = 1;
+            self.jump = true;
+        } else if keys.contains(&"ArrowLeft") == false
+            && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
+        {
+            self.direction = 1;
+            self.jump = false;
         } else if keys.contains(&"ArrowRight") == true
             && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
         {
             self.direction = 2;
             self.step.x = self.speed;
+            self.jump = true;
+        } else if keys.contains(&"ArrowRight") == false
+            && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
+        {
+            self.direction = 2;
+            self.jump = false;
         }
 
         self.pos = self.pos + self.step;
@@ -337,26 +361,30 @@ impl Actor for Frog {
             None
         } else {
             if self.lives > 0 {
-                if self.direction == 0
-                {
-                    Some(pt(4, 4))
-                }else if self.direction == 1
-                {
-                    Some(pt(100, 4))
-
-                }
-                else if self.direction == 2
-                {
-                    Some(pt(64, 36))
-
-                } else if self.direction == 4
-                {
-                    Some(pt(38,4))
-
-                }
-                else {
-                    Some(pt(162, 34))
-
+                if self.direction == 0 {
+                    if self.jump == false {
+                        Some(pt(4, 4))
+                    } else {
+                        Some(pt(38, 4))
+                    }
+                } else if self.direction == 1 {
+                    if self.jump == false {
+                        Some(pt(100, 4))
+                    } else {
+                        Some(pt(132, 6))
+                    }
+                } else if self.direction == 2 {
+                    if self.jump == false {
+                        Some(pt(64, 36))
+                    } else {
+                        Some(pt(32, 38))
+                    }
+                } else {
+                    if self.jump == false {
+                        Some(pt(162, 34))
+                    } else {
+                        Some(pt(132, 34))
+                    }
                 }
             } else {
                 Some(pt(2, 192))
@@ -390,7 +418,7 @@ impl BounceGame {
             pt(size.x - 113, size.y - 320 + 6),
             true,
         )));
-        let size_frog = pt(size.x / 2 - 16, size.y - 3 * 32);
+        let size_frog = pt(size.x / 2 - 16, (size.y + 3) - 3 * 32);
         for i in 1..5 {
             let random_number = randint(20, 1000);
             if i % 2 == 0 {
