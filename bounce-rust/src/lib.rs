@@ -41,7 +41,6 @@ impl BounceGui {
     }
     pub fn tick(&mut self) {
         g2d::clear_canvas();
-        let txt = format!("Lives: {}", self.game.remaining_lives());
 
         if self.game.game_over() {
             self.create_background();

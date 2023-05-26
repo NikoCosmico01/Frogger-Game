@@ -64,7 +64,6 @@ pub struct Turtle {
     speed: i32,
     step: Pt,
     left: bool,
-    blinking: i32,
 }
 impl Turtle {
     pub fn new(pos: Pt, is_left: bool) -> Turtle {
@@ -73,7 +72,6 @@ impl Turtle {
             speed: 2,
             step: pt(0, 0),
             left: is_left,
-            blinking: 0,
         }
     }
 }
@@ -124,7 +122,7 @@ impl Vehicle {
             size_v = pt(61, 23);
         } else if type_v == VehicleType::Car1 {
             size_v = pt(32, 28);
-        } else {
+        } else { //Car2
             size_v = pt(29, 20)
         }
         Vehicle {
@@ -239,8 +237,8 @@ impl Frog {
 impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         self.step = pt(0, 0);
-        let mut collide_with_trunk = false;
-        let mut collide_with_turtle = false;
+        let keys = arena.current_keys();
+        let mut collide_with_entity = false;
         if (self.pos.x >= 0 && self.pos.x <= 32
             || self.pos.x >= 96 && self.pos.x <= 160
             || self.pos.x >= 224 && self.pos.x <= 256
@@ -262,7 +260,7 @@ impl Actor for Frog {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
                     self.lives -= 1;
-                    if self.lives > 0 {
+                    if self.lives > 0 { //1st Checkpoint
                         self.pos.x = 223;
                         self.pos.y = 483;
                         self.blinking = 20;
@@ -272,19 +270,17 @@ impl Actor for Frog {
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
                     self.step.x = trunk.step.x;
-                    collide_with_trunk = true;
+                    collide_with_entity = true;
                     
                 }
                 if let Some(turtle) = other.as_any().downcast_ref::<Turtle>() {
                     self.step.x = turtle.step.x;
-                    collide_with_turtle = true;
+                    collide_with_entity = true;
                 }
             }
-            if collide_with_trunk == false && collide_with_turtle == false {
-                if self.pos.y < arena.size().y - 10 * 32 + 13
-                    && self.pos.y > arena.size().y - 15 * 32 + 13
-                {
-                    self.lives -= 1;
+            if collide_with_entity == false {
+                if self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 15 * 32 + 13 { //Collide with Water
+                    self.lives -= 1; //2nd Checkpoint
                     if self.lives > 0 {
                         self.direction = 0;
                         self.pos.x = 223;
@@ -292,92 +288,63 @@ impl Actor for Frog {
                         self.blinking = 20;
                         self.jump = false;
                     }
-                }else if self.pos.y < arena.size().y - 15 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
-                    if self.pos.x >= 32 && self.pos.x <= 96{
+                } else if self.pos.y < arena.size().y - 15 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{ //Between Grass
+                    if self.pos.x >= 32 && self.pos.x <= 96 {
                         self.score_vec[0] = true;
                     }
                     if self.pos.x >= 160 && self.pos.x <= 224 {
                         self.score_vec[1] = true;
-                       
                     }
-                    if self.pos.x >= 256 && self.pos.x <= 320{
+                    if self.pos.x >= 256 && self.pos.x <= 320 {
                         self.score_vec[2] = true;
-
                     }
-                    if self.pos.x >= 384 && self.pos.x <= 448
-                    {
+                    if self.pos.x >= 384 && self.pos.x <= 448 {
                         self.score_vec[3] = true;
                     }
-                    
-                    self.pos.x = 223;
+                    self.pos.x = 223; //Return to 2nd Checkpoint
                     self.pos.y = 483;
                     self.blinking = 0;
                     self.direction = 0;
                     self.jump = false;
-                
                 }
         
         }
-        let keys = arena.current_keys();
-        if keys.contains(&"ArrowUp") == true
-            && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
-            && self.blinking == 0
-        {
+        if keys.contains(&"ArrowUp") == true && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
             self.direction = 0;
             self.jump = true;
             self.step.y = -self.speed;
-        } else if keys.contains(&"ArrowUp") == false
-            && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
-        {
+        } else if keys.contains(&"ArrowUp") == false && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") {
             self.direction = 0;
             self.jump = false;
-        } else if keys.contains(&"ArrowDown") == true
-            && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
-            && self.pos.y < 500
-        {
+        } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown") && self.pos.y < 500 {
             self.direction = 3;
             self.jump = true;
             self.step.y = self.speed;
-        } else if keys.contains(&"ArrowDown") == false
-            && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
-            && self.pos.y < 500
-        {
+        } else if keys.contains(&"ArrowDown") == false && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown") && self.pos.y < 500 {
             self.direction = 3;
             self.jump = false;
         }
-        if keys.contains(&"ArrowLeft") == true
-            && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
-        {
+        if keys.contains(&"ArrowLeft") == true && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.step.x = -self.speed;
             self.direction = 1;
             self.jump = true;
-        } else if keys.contains(&"ArrowLeft") == false
-            && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
-        {
+        } else if keys.contains(&"ArrowLeft") == false && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
             self.direction = 1;
             self.jump = false;
-        } else if keys.contains(&"ArrowRight") == true
-            && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
-        {
+        } else if keys.contains(&"ArrowRight") == true && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight") {
             self.direction = 2;
             self.step.x = self.speed;
             self.jump = true;
-        } else if keys.contains(&"ArrowRight") == false
-            && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
-        {
+        } else if keys.contains(&"ArrowRight") == false && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight") {
             self.direction = 2;
             self.jump = false;
         }
     }
-
-        
-
-        self.pos = self.pos + self.step;
-        let scr = arena.size() - self.size;
-        self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
-        self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
-
-        self.blinking = max(self.blinking - 1, 0);
+    self.pos = self.pos + self.step;
+    let scr = arena.size() - self.size;
+    self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
+    self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
+    self.blinking = max(self.blinking - 1, 0);
     }
     fn pos(&self) -> Pt {
         self.pos
@@ -435,71 +402,24 @@ pub struct BounceGame {
 impl BounceGame {
     pub fn new(size: Pt) -> BounceGame {
         let mut arena = Arena::new(size);
-        arena.spawn(Box::new(Turtle::new(
-            pt(size.x - 61, size.y - 320 + 6),
-            true,
-        )));
-        arena.spawn(Box::new(Turtle::new(
-            pt(size.x - 87, size.y - 320 + 6),
-            true,
-        )));
-        arena.spawn(Box::new(Turtle::new(
-            pt(size.x - 113, size.y - 320 + 6),
-            true,
-        )));
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 61, size.y - 320 + 6), true)));
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 87, size.y - 320 + 6), true)));
+        arena.spawn(Box::new(Turtle::new(pt(size.x - 113, size.y - 320 + 6), true)));
         let size_frog = pt(size.x / 2 - 16, (size.y + 3) - 3 * 32);
         for i in 1..5 {
             let random_number = randint(20, 1000);
             if i % 2 == 0 {
-                arena.spawn(Box::new(Trunk::new(
-                    pt(
-                        size.x - 61 - (i * random_number),
-                        size.y - (10 + i) * 32 + 13,
-                    ),
-                    true,
-                )));
+                arena.spawn(Box::new(Trunk::new(pt(size.x - 61 - (i * random_number), size.y - (10 + i) * 32 + 13), true)));
             } else {
-                arena.spawn(Box::new(Trunk::new(
-                    pt(
-                        size.x - 61 - (i * random_number),
-                        size.y - (10 + i) * 32 + 13,
-                    ),
-                    false,
-                )));
+                arena.spawn(Box::new(Trunk::new(pt(size.x - 61 - (i * random_number), size.y - (10 + i) * 32 + 13), false)));
             }
-            println!("{}", random_number);
         }
         arena.spawn(Box::new(Frog::new(size_frog)));
-        arena.spawn(Box::new(Vehicle::new(
-            pt(size.x - 61, size.y - 4 * 32),
-            false,
-            VehicleType::Car1,
-            4,
-        )));
-        arena.spawn(Box::new(Vehicle::new(
-            pt(size.x - 61, size.y - 6 * 32),
-            true,
-            VehicleType::Car2,
-            5,
-        )));
-        arena.spawn(Box::new(Vehicle::new(
-            pt(size.x - 30, size.y - 5 * 32),
-            true,
-            VehicleType::Truck,
-            6,
-        )));
-        arena.spawn(Box::new(Vehicle::new(
-            pt(size.x - 30, size.y - 7 * 32),
-            true,
-            VehicleType::Car1,
-            4,
-        )));
-        arena.spawn(Box::new(Vehicle::new(
-            pt(size.x - 30, size.y - 8 * 32),
-            false,
-            VehicleType::Truck,
-            6,
-        )));
+        arena.spawn(Box::new(Vehicle::new(pt(size.x - 61, size.y - 4 * 32),false,VehicleType::Car1,4)));
+        arena.spawn(Box::new(Vehicle::new(pt(size.x - 61, size.y - 6 * 32),true,VehicleType::Car2,5)));
+        arena.spawn(Box::new(Vehicle::new(pt(size.x - 30, size.y - 5 * 32),true,VehicleType::Truck,6)));
+        arena.spawn(Box::new(Vehicle::new(pt(size.x - 30, size.y - 7 * 32),true,VehicleType::Car1,4)));
+        arena.spawn(Box::new(Vehicle::new(pt(size.x - 30, size.y - 8 * 32),false,VehicleType::Truck,6)));
 
         BounceGame {
             arena: arena,
