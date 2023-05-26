@@ -15,11 +15,16 @@ pub struct Trunk {
     pos: Pt,
     speed: i32,
     step: Pt,
-    left: bool
+    left: bool,
 }
 impl Trunk {
     pub fn new(pos: Pt, is_left: bool) -> Trunk {
-        Trunk{pos: pos, speed: 2, step: pt(0,0), left: is_left}
+        Trunk {
+            pos: pos,
+            speed: 2,
+            step: pt(0, 0),
+            left: is_left,
+        }
     }
 }
 impl Actor for Trunk {
@@ -37,25 +42,39 @@ impl Actor for Trunk {
         }
         self.pos = self.pos + self.step;
     }
-    fn sprite(&self) -> Option<Pt> { Some(pt(192,102)) }
-    fn pos(&self) -> Pt { self.pos }
+    fn sprite(&self) -> Option<Pt> {
+        Some(pt(192, 102))
+    }
+    fn pos(&self) -> Pt {
+        self.pos
+    }
     fn alive(&self) -> bool {
         true
-    }fn as_any(&self) -> &dyn Any {
+    }
+    fn as_any(&self) -> &dyn Any {
         self
     }
-    fn size(&self) -> Pt { pt(95, 19) }
+    fn size(&self) -> Pt {
+        pt(95, 19)
+    }
 }
 
 pub struct Turtle {
     pos: Pt,
     speed: i32,
     step: Pt,
-    left: bool
+    left: bool,
+    blinking: i32,
 }
 impl Turtle {
     pub fn new(pos: Pt, is_left: bool) -> Turtle {
-        Turtle{pos: pos, speed: 2, step: pt(0,0), left: is_left}
+        Turtle {
+            pos: pos,
+            speed: 2,
+            step: pt(0, 0),
+            left: is_left,
+            blinking: 0,
+        }
     }
 }
 impl Actor for Turtle {
@@ -72,15 +91,33 @@ impl Actor for Turtle {
             self.step.x = self.speed;
         }
         self.pos = self.pos + self.step;
+
+        //Random blinking
+        if randint(0, 1000) == 5 && self.blinking == 0 {
+            self.blinking = 10;
+        }
+
+        self.blinking = max(self.blinking - 1, 0);
     }
-    fn sprite(&self) -> Option<Pt> { Some(pt(224, 132)) }
-    fn pos(&self) -> Pt { self.pos }
+    fn sprite(&self) -> Option<Pt> {
+        if self.blinking > 0 && (self.blinking / 2) % 2 == 0 {
+            None
+        } else {
+            Some(pt(224, 132))
+        }
+    }
+    fn pos(&self) -> Pt {
+        self.pos
+    }
     fn alive(&self) -> bool {
         true
-    }fn as_any(&self) -> &dyn Any {
+    }
+    fn as_any(&self) -> &dyn Any {
         self
     }
-    fn size(&self) -> Pt { pt(30, 22) }
+    fn size(&self) -> Pt {
+        pt(30, 22)
+    }
 }
 
 pub struct Vehicle {
@@ -177,7 +214,7 @@ pub struct Frog {
     size: Pt,
     speed: i32,
     lives: i32,
-	is_game_won: bool,
+    is_game_won: bool,
     blinking: i32,
 }
 impl Frog {
@@ -188,40 +225,41 @@ impl Frog {
             size: pt(32, 32),
             speed: 32,
             lives: 3,
-			is_game_won: false,
+            is_game_won: false,
             blinking: 0,
         }
     }
     fn lives(&self) -> i32 {
         self.lives
     }
-	fn game_won(&self) -> bool {
-		self.is_game_won
-	}
+    fn game_won(&self) -> bool {
+        self.is_game_won
+    }
 }
 impl Actor for Frog {
     fn act(&mut self, arena: &mut ArenaStatus) {
         self.step = pt(0, 0);
         let mut collide_with_trunk = false;
-        let mut collide_with_turtle = false;	
-		if (self.pos.x >= 0 && self.pos.x <=32 ||
-				self.pos.x >= 96 && self.pos.x <= 160 ||
-				self.pos.x >= 224 && self.pos.x <= 256 ||
-				self.pos.x >= 320 && self.pos.x <= 384 ||
-				self.pos.x >= 448 && self.pos.x <= 480) &&
-				self.pos.y >= 96 && self.pos.y < 128 {
-				self.is_game_won = true;
-			}
+        let mut collide_with_turtle = false;
+        if (self.pos.x >= 0 && self.pos.x <= 32
+            || self.pos.x >= 96 && self.pos.x <= 160
+            || self.pos.x >= 224 && self.pos.x <= 256
+            || self.pos.x >= 320 && self.pos.x <= 384
+            || self.pos.x >= 448 && self.pos.x <= 480)
+            && self.pos.y >= 96
+            && self.pos.y < 128
+        {
+            self.is_game_won = true;
+        }
         if self.blinking == 0 {
             for other in arena.collisions() {
                 if other.as_any().downcast_ref::<Vehicle>().is_some() {
                     self.lives -= 1;
-                    if self.lives > 0{
+                    if self.lives > 0 {
                         self.pos.x = 223;
                         self.pos.y = 480;
                         self.blinking = 20;
                     }
-                   
                 }
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
                     self.step.x = trunk.step.x;
@@ -232,33 +270,47 @@ impl Actor for Frog {
                     collide_with_turtle = true;
                 }
             }
-            if collide_with_trunk == false && collide_with_turtle == false && self.pos.y < arena.size().y - 10 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
+            if collide_with_trunk == false
+                && collide_with_turtle == false
+                && self.pos.y < arena.size().y - 10 * 32 + 13
+                && self.pos.y > arena.size().y - 16 * 32 + 13
+            {
                 self.lives -= 1;
-                    if self.lives > 0{
-                        self.pos.x = 223;
-                        self.pos.y = 288;
-                        self.blinking = 20;
-                    }
-            }            
+                if self.lives > 0 {
+                    self.pos.x = 223;
+                    self.pos.y = 288;
+                    self.blinking = 20;
+                }
+            }
         }
 
         let keys = arena.current_keys();
-        if keys.contains(&"ArrowUp") == true && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp") && self.blinking == 0 {
+        if keys.contains(&"ArrowUp") == true
+            && keys.contains(&"ArrowUp") != arena.previous_keys().contains(&"ArrowUp")
+            && self.blinking == 0
+        {
             self.step.y = -self.speed;
-        } else if keys.contains(&"ArrowDown") == true && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown") && self.pos.y < 500{
+        } else if keys.contains(&"ArrowDown") == true
+            && keys.contains(&"ArrowDown") != arena.previous_keys().contains(&"ArrowDown")
+            && self.pos.y < 500
+        {
             self.step.y = self.speed;
-        } 
-        if keys.contains(&"ArrowLeft") == true && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft") {
+        }
+        if keys.contains(&"ArrowLeft") == true
+            && keys.contains(&"ArrowLeft") != arena.previous_keys().contains(&"ArrowLeft")
+        {
             self.step.x = -self.speed;
-        } else if keys.contains(&"ArrowRight") == true && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight"){
+        } else if keys.contains(&"ArrowRight") == true
+            && keys.contains(&"ArrowRight") != arena.previous_keys().contains(&"ArrowRight")
+        {
             self.step.x = self.speed;
         }
-       
+
         self.pos = self.pos + self.step;
         let scr = arena.size() - self.size;
         self.pos.x = min(max(self.pos.x, 0), scr.x); // clamp
         self.pos.y = min(max(self.pos.y, 0), scr.y); // clamp
-        
+
         self.blinking = max(self.blinking - 1, 0);
     }
     fn pos(&self) -> Pt {
@@ -271,9 +323,11 @@ impl Actor for Frog {
         if self.blinking > 0 && (self.blinking / 2) % 2 == 0 {
             None
         } else {
-            if self.lives > 0{Some(pt(256, 256))}
-            else {Some(pt(2, 192))}
-            
+            if self.lives > 0 {
+                Some(pt(256, 256))
+            } else {
+                Some(pt(2, 192))
+            }
         }
     }
     fn alive(&self) -> bool {
@@ -291,51 +345,72 @@ pub struct BounceGame {
 impl BounceGame {
     pub fn new(size: Pt) -> BounceGame {
         let mut arena = Arena::new(size);
-        arena.spawn(Box::new(Turtle::new(pt(size.x - 61, size.y - 320 + 6), true)));
-        arena.spawn(Box::new(Turtle::new(pt(size.x - 87, size.y - 320 + 6), true)));
-        arena.spawn(Box::new(Turtle::new(pt(size.x - 113, size.y - 320 + 6), true)));
+        arena.spawn(Box::new(Turtle::new(
+            pt(size.x - 61, size.y - 320 + 6),
+            true,
+        )));
+        arena.spawn(Box::new(Turtle::new(
+            pt(size.x - 87, size.y - 320 + 6),
+            true,
+        )));
+        arena.spawn(Box::new(Turtle::new(
+            pt(size.x - 113, size.y - 320 + 6),
+            true,
+        )));
         let size_frog = pt(size.x / 2 - 16, size.y - 3 * 32);
-        for i in 1..5{
-            let random_number = randint(20,1000);
+        for i in 1..5 {
+            let random_number = randint(20, 1000);
             if i % 2 == 0 {
-                arena.spawn(Box::new(Trunk::new(pt(size.x - 61-(i*random_number), size.y - (10+i) * 32 + 13),true)));
-            }else{
-                arena.spawn(Box::new(Trunk::new(pt(size.x - 61-(i*random_number), size.y - (10+i) * 32 + 13),false)));
+                arena.spawn(Box::new(Trunk::new(
+                    pt(
+                        size.x - 61 - (i * random_number),
+                        size.y - (10 + i) * 32 + 13,
+                    ),
+                    true,
+                )));
+            } else {
+                arena.spawn(Box::new(Trunk::new(
+                    pt(
+                        size.x - 61 - (i * random_number),
+                        size.y - (10 + i) * 32 + 13,
+                    ),
+                    false,
+                )));
             }
-            println!("{}",random_number);
+            println!("{}", random_number);
         }
         arena.spawn(Box::new(Frog::new(size_frog)));
         arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 61, size.y - 4 * 32),
             false,
             VehicleType::Car1,
-			4,
+            4,
         )));
         arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 61, size.y - 6 * 32),
             true,
             VehicleType::Car2,
-			5,
+            5,
         )));
-		arena.spawn(Box::new(Vehicle::new(
+        arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 30, size.y - 5 * 32),
             true,
             VehicleType::Truck,
-			6,
+            6,
         )));
-		arena.spawn(Box::new(Vehicle::new(
+        arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 30, size.y - 7 * 32),
             true,
             VehicleType::Car1,
-			4,
+            4,
         )));
-		arena.spawn(Box::new(Vehicle::new(
+        arena.spawn(Box::new(Vehicle::new(
             pt(size.x - 30, size.y - 8 * 32),
             false,
             VehicleType::Truck,
-			6,
+            6,
         )));
-      
+
         BounceGame {
             arena: arena,
             playtime: 120,
@@ -343,9 +418,9 @@ impl BounceGame {
     }
     pub fn game_over(&self) -> bool {
         self.remaining_time() <= 0 || self.remaining_lives() <= 0
-    }	
+    }
     pub fn game_won(&self) -> bool {
-		self.winning_game()
+        self.winning_game()
     }
     pub fn remaining_time(&self) -> i32 {
         self.playtime - self.arena.count() / 30
@@ -360,7 +435,7 @@ impl BounceGame {
         }
         lives
     }
-	pub fn winning_game(&self) -> bool {
+    pub fn winning_game(&self) -> bool {
         let mut win_game = false;
         let actors = self.actors();
         for actor in actors {
