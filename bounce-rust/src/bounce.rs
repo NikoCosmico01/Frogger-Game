@@ -214,10 +214,10 @@ pub struct Frog {
     size: Pt,
     speed: i32,
     lives: i32,
-    is_game_won: bool,
     blinking: i32,
     direction: i32, //0 w, 1 a, 2 d, 3s
     jump: bool,
+    score_vec: [bool; 4],
 }
 impl Frog {
     pub fn new(pos: Pt) -> Frog {
@@ -227,17 +227,24 @@ impl Frog {
             size: pt(25, 27),
             speed: 32,
             lives: 3,
-            is_game_won: false,
             blinking: 0,
             direction: 0,
             jump: false,
+            score_vec: [false; 4],
         }
     }
     fn lives(&self) -> i32 {
         self.lives
     }
     fn game_won(&self) -> bool {
-        self.is_game_won
+        if self.score_vec == [true; 4]{
+            true
+        }else{
+            false
+        }
+    }
+    pub fn score(&self) -> &[bool; 4] {
+        &self.score_vec
     }
 }
 impl Actor for Frog {
@@ -253,7 +260,14 @@ impl Actor for Frog {
             && self.pos.y >= 96
             && self.pos.y < 128
         {
-            self.is_game_won = true;
+            self.lives -= 1;
+            if self.lives > 0 {
+                self.pos.x = 223;
+                self.pos.y = 291;
+                self.blinking = 20;
+                self.direction = 0;
+                self.jump = false;
+            }
         }
         if self.blinking == 0 {
             for other in arena.collisions() {
@@ -270,27 +284,52 @@ impl Actor for Frog {
                 if let Some(trunk) = other.as_any().downcast_ref::<Trunk>() {
                     self.step.x = trunk.step.x;
                     collide_with_trunk = true;
+                    
                 }
                 if let Some(turtle) = other.as_any().downcast_ref::<Turtle>() {
                     self.step.x = turtle.step.x;
                     collide_with_turtle = true;
                 }
             }
-            if collide_with_trunk == false
-                && collide_with_turtle == false
-                && self.pos.y < arena.size().y - 10 * 32 + 13
-                && self.pos.y > arena.size().y - 16 * 32 + 13
-            {
-                self.lives -= 1;
-                if self.lives > 0 {
+            if collide_with_trunk == false && collide_with_turtle == false {
+                if self.pos.y < arena.size().y - 10 * 32 + 13
+                    && self.pos.y > arena.size().y - 15 * 32 + 13
+                {
+                    self.lives -= 1;
+                    if self.lives > 0 {
+                        self.direction = 0;
+                        self.pos.x = 223;
+                        self.pos.y = 291;
+                        self.blinking = 20;
+                        self.jump = false;
+                    }
+                }else if self.pos.y < arena.size().y - 15 * 32 + 13 && self.pos.y > arena.size().y - 16 * 32 + 13{
+                    if self.pos.x >= 32 && self.pos.x <= 96{
+                        self.score_vec[0] = true;
+                    }
+                    if self.pos.x >= 160 && self.pos.x <= 224 {
+                        self.score_vec[1] = true;
+                       
+                    }
+                    if self.pos.x >= 256 && self.pos.x <= 320{
+                        self.score_vec[2] = true;
+
+                    }
+                    if self.pos.x >= 384 && self.pos.x <= 448
+                    {
+                        self.score_vec[3] = true;
+                    }
+                    
                     self.pos.x = 223;
-                    self.pos.y = 291;
-                    self.blinking = 20;
+                    self.pos.y = 483;
+                    self.blinking = 0;
                     self.direction = 0;
                     self.jump = false;
+                
                 }
-            }
+        
         }
+    }
 
         let keys = arena.current_keys();
         if keys.contains(&"ArrowUp") == true

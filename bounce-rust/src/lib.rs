@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
-
+use crate::bounce::Frog;
 pub mod actor;
 pub mod bounce;
 pub mod g2d;
@@ -65,6 +65,21 @@ impl BounceGui {
             self.draw_time();
             self.draw_live();
             for b in self.game.actors() {
+                if let Some(frog) = b.as_any().downcast_ref::<Frog>() {
+                    if frog.score()[0] {
+                        g2d::draw_image_clip("frogger.png".to_string(), pt2d::pt(47,96), pt2d::pt(256, 256), pt2d::pt(32, 32));
+                    }
+                    if frog.score()[1] {
+                        g2d::draw_image_clip("frogger.png".to_string(), pt2d::pt(175,96), pt2d::pt(256, 256), pt2d::pt(32, 32));
+                    }
+                    if frog.score()[2] {
+                        g2d::draw_image_clip("frogger.png".to_string(), pt2d::pt(271,96), pt2d::pt(256, 256), pt2d::pt(32, 32));
+                    }
+                    if frog.score()[3] {
+                        g2d::draw_image_clip("frogger.png".to_string(), pt2d::pt(399,96), pt2d::pt(256, 256), pt2d::pt(32, 32));
+                    }
+                }
+                
                 if let Some(img) = b.sprite() {
                     g2d::draw_image_clip("frogger.png".to_string(), b.pos(), img, b.size());
                 } else {
